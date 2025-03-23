@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
@@ -15,7 +15,10 @@ if (!JWT_SECRET) {
 }
 
 // Register a New User
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser: RequestHandler = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
   try {
     const { username, email, password } = req.body;
 
@@ -30,13 +33,16 @@ export const registerUser = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
+  } catch (error: Error) {
     res.status(500).json({ message: "Server error" });
   }
 };
 
 // Login User
-export const loginUser = async (req: Request, res: Response) => {
+export const loginUser: RequestHandler = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
   try {
     const { email, password } = req.body;
 
@@ -58,7 +64,7 @@ export const loginUser = async (req: Request, res: Response) => {
     });
 
     res.json({ token });
-  } catch (error) {
+  } catch (error: Error) {
     res.status(500).json({ message: "Server error" });
   }
 };

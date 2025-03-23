@@ -8,7 +8,7 @@ export const validateRequest =
     try {
       req.body = schema(req.body); // Validate and cast request body
       next();
-    } catch (error) {
+    } catch (error: Error) {
       next(new CustomError("Invalid request format", 400));
     }
   };

@@ -61,7 +61,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 }));
 // Create a new note
 router.post("/", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const { title, content, categoryId } = req.body;
         if (!title || !content || !categoryId)
@@ -72,7 +72,7 @@ router.post("/", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0
             title,
             content,
             categoryId,
-            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId,
         });
         yield note.save();
         res.status(201).json(note);
@@ -86,11 +86,11 @@ router.post("/", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0
 }));
 // Delete a note
 router.delete("/:id", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _c;
     try {
         const note = yield note_model_1.default.findByIdAndDelete({
             _id: req.params.id,
-            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
+            userId: (_c = req.user) === null || _c === void 0 ? void 0 : _c.userId,
         });
         if (!note)
             return res.status(404).json({ message: "Note not found" });
@@ -105,12 +105,12 @@ router.delete("/:id", auth_1.authenticateUser, (req, res) => __awaiter(void 0, v
 }));
 // Update a note
 router.put("/:id", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _d;
     try {
         const { title, content, categoryId } = req.body;
         const note = yield note_model_1.default.findById({
             _id: req.params.id,
-            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
+            userId: (_d = req.user) === null || _d === void 0 ? void 0 : _d.userId,
         });
         if (!note)
             return res.status(404).json({ message: "Note not found" });
