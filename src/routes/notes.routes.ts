@@ -16,11 +16,13 @@ router.get("/categories/:categoryId", async (req: Request, res: Response) => {
     const { categoryId } = req.params;
     const notes = await Note.find({ categoryId });
     res.json(notes);
+    return;
   } catch (error: any) {
     console.error(error);
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
+    return;
   }
 });
 
@@ -28,7 +30,7 @@ router.get("/categories/:categoryId", async (req: Request, res: Response) => {
 router.get(
   "/",
   authenticateUser,
-  async (req: AuthenticatedRequest, res: Response) => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const notes = await Note.find({ userId: req.user?.userId });
       res.json(notes);
@@ -56,7 +58,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 router.post(
   "/",
   authenticateUser as RequestHandler,
-  async (req: AuthenticatedRequest, res: Response) => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const { title, content } = req.body;
       if (!title || !content) {
@@ -67,7 +69,7 @@ router.post(
       const note = new Note({
         title,
         content,
-        userId: req.user?.userId, // Assign note to the authenticated user
+        userId: req.user?.userId,
       });
 
       await note.save();
@@ -81,14 +83,18 @@ router.post(
 // Delete a note
 router.delete(
   "/:id",
-  authenticateUser,
-  async (req: AuthenticatedRequest, res: Response) => {
+  authenticateUser as RequestHandler,
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const note = await Note.findByIdAndDelete({
+      const note = await Note.findOneAndDelete({
         _id: req.params.id,
         userId: req.user?.userId,
       });
-      if (!note) return res.status(404).json({ message: "Note not found" });
+
+      if (!note) {
+        res.status(404).json({ message: "Note not found" });
+      }
+
       res.json({ message: "Note deleted successfully" });
     } catch (error: any) {
       console.error(error);
@@ -102,19 +108,24 @@ router.delete(
 // Update a note
 router.put(
   "/:id",
-  authenticateUser,
-  async (req: AuthenticatedRequest, res: Response) => {
+  authenticateUser as RequestHandler,
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const { title, content, categoryId } = req.body;
-      const note = await Note.findById({
+      const note = await Note.findOne({
         _id: req.params.id,
         userId: req.user?.userId,
       });
-      if (!note) return res.status(404).json({ message: "Note not found" });
 
-      note.title = title || note.title;
-      note.content = content || note.content;
-      note.categoryId = categoryId || note.categoryId;
+      if (!note) {
+        res.status(404).json({ message: "Note not found" });
+        return;
+      }
+
+      // Update note fields only if new values are provided
+      if (title) note.title = title;
+      if (content) note.content = content;
+      if (categoryId) note.categoryId = categoryId;
 
       await note.save();
       res.json(note);

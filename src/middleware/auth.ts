@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 
 import dotenv from "dotenv";
@@ -17,7 +17,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 // Authentication Middleware
-export const authenticateUser = (
+export const authenticateUser: RequestHandler = (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
@@ -30,10 +30,8 @@ export const authenticateUser = (
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      userId: string;
-    };
-    req.user = { userId: decoded.userId };
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    (req as AuthenticatedRequest).user = { userId: decoded.userId };
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });

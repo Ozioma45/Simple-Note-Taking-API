@@ -20,7 +20,7 @@ const authenticateUser = (req, res, next) => {
         return;
     }
     try {
-        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+        const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
         req.user = { userId: decoded.userId };
         next();
     }

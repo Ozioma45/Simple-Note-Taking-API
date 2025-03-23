@@ -22,12 +22,14 @@ router.get("/categories/:categoryId", (req, res) => __awaiter(void 0, void 0, vo
         const { categoryId } = req.params;
         const notes = yield note_model_1.default.find({ categoryId });
         res.json(notes);
+        return;
     }
     catch (error) {
         console.error(error);
         res
             .status(500)
             .json({ message: "Internal server error", error: error.message });
+        return;
     }
 }));
 // Get all notes
@@ -67,7 +69,7 @@ router.post("/", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0
         const note = new note_model_1.default({
             title,
             content,
-            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId, // Assign note to the authenticated user
+            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
         });
         yield note.save();
         res.status(201).json(note);
@@ -80,12 +82,13 @@ router.post("/", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0
 router.delete("/:id", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const note = yield note_model_1.default.findByIdAndDelete({
+        const note = yield note_model_1.default.findOneAndDelete({
             _id: req.params.id,
             userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
         });
-        if (!note)
-            return res.status(404).json({ message: "Note not found" });
+        if (!note) {
+            res.status(404).json({ message: "Note not found" });
+        }
         res.json({ message: "Note deleted successfully" });
     }
     catch (error) {
@@ -100,15 +103,21 @@ router.put("/:id", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void
     var _a;
     try {
         const { title, content, categoryId } = req.body;
-        const note = yield note_model_1.default.findById({
+        const note = yield note_model_1.default.findOne({
             _id: req.params.id,
             userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
         });
-        if (!note)
-            return res.status(404).json({ message: "Note not found" });
-        note.title = title || note.title;
-        note.content = content || note.content;
-        note.categoryId = categoryId || note.categoryId;
+        if (!note) {
+            res.status(404).json({ message: "Note not found" });
+            return;
+        }
+        // Update note fields only if new values are provided
+        if (title)
+            note.title = title;
+        if (content)
+            note.content = content;
+        if (categoryId)
+            note.categoryId = categoryId;
         yield note.save();
         res.json(note);
     }
