@@ -12,11 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createCategory = exports.getCategories = void 0;
 const express_1 = require("express");
 const category_model_1 = __importDefault(require("../models/category.model"));
 const router = (0, express_1.Router)();
 // Get all categories
-router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getCategories = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const categories = yield category_model_1.default.find();
         res.json(categories);
@@ -24,18 +25,22 @@ router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     catch (error) {
         res.status(500).json({ message: "Internal server error" });
     }
-}));
+});
+exports.getCategories = getCategories;
+router.get("/", exports.getCategories);
 // Create a new category
-router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name } = req.body;
         if (!name) {
-            return res.status(400).json({ message: "Category name is required" });
+            res.status(400).json({ message: "Category name is required" });
+            return;
         }
         // Check if the category already exists
         const existingCategory = yield category_model_1.default.findOne({ name });
         if (existingCategory) {
-            return res.status(400).json({ message: "Category already exists" });
+            res.status(400).json({ message: "Category already exists" });
+            return;
         }
         const category = new category_model_1.default({ name });
         yield category.save();
@@ -44,5 +49,7 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     catch (error) {
         res.status(500).json({ message: "Internal server error" });
     }
-}));
+});
+exports.createCategory = createCategory;
+router.post("/", exports.createCategory);
 exports.default = router;

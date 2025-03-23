@@ -30,7 +30,8 @@ const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         // Check if user exists
         const existingUser = yield user_model_1.default.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
+            res.status(400).json({ message: "User already exists" });
+            return;
         }
         // Create new user
         const user = new user_model_1.default({ username, email, password });
@@ -49,12 +50,14 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Check user existence
         const user = yield user_model_1.default.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: "Invalid credentials" });
+            res.status(400).json({ message: "Invalid credentials" });
+            return;
         }
         // Validate password
         const isMatch = yield user.comparePassword(password);
         if (!isMatch) {
-            return res.status(400).json({ message: "Invalid credentials" });
+            res.status(400).json({ message: "Invalid credentials" });
+            return;
         }
         // Generate JWT Token
         const token = jsonwebtoken_1.default.sign({ userId: user._id }, JWT_SECRET, {

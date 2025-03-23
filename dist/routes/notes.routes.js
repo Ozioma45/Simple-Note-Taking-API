@@ -13,8 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const note_model_1 = __importDefault(require("../models/note.model"));
 const auth_1 = require("../middleware/auth");
+const note_model_1 = __importDefault(require("../models/note.model"));
 const router = (0, express_1.Router)();
 // Get notes by category
 router.get("/categories/:categoryId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -31,66 +31,58 @@ router.get("/categories/:categoryId", (req, res) => __awaiter(void 0, void 0, vo
     }
 }));
 // Get all notes
-router.get("/", auth_1.authenticateUser, (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const notes = yield note_model_1.default.find({ userId: (_a = _req.user) === null || _a === void 0 ? void 0 : _a.userId });
+        const notes = yield note_model_1.default.find({ userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId });
         res.json(notes);
     }
     catch (error) {
-        console.error(error);
-        res
-            .status(500)
-            .json({ message: "Internal server error", error: error.message });
+        res.status(500).json({ message: "Internal server error" });
     }
 }));
 // Get a specific note
 router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const note = yield note_model_1.default.findById(req.params.id);
-        if (!note)
-            return res.status(404).json({ message: "Note not found" });
+        if (!note) {
+            res.status(404).json({ message: "Note not found" });
+            return;
+        }
         res.json(note);
     }
     catch (error) {
-        console.error(error);
-        res
-            .status(500)
-            .json({ message: "Internal server error", error: error.message });
+        res.status(500).json({ message: "Internal server error" });
     }
 }));
 // Create a new note
 router.post("/", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _a;
     try {
-        const { title, content, categoryId } = req.body;
-        if (!title || !content || !categoryId)
-            return res
-                .status(400)
-                .json({ message: "Title, content, and categoryId are required" });
+        const { title, content } = req.body;
+        if (!title || !content) {
+            res.status(400).json({ message: "Title and content are required" });
+            return;
+        }
         const note = new note_model_1.default({
             title,
             content,
-            categoryId,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId,
+            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId, // Assign note to the authenticated user
         });
         yield note.save();
         res.status(201).json(note);
     }
     catch (error) {
-        console.error(error);
-        res
-            .status(500)
-            .json({ message: "Internal server error", error: error.message });
+        res.status(500).json({ message: "Internal server error" });
     }
 }));
 // Delete a note
 router.delete("/:id", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+    var _a;
     try {
         const note = yield note_model_1.default.findByIdAndDelete({
             _id: req.params.id,
-            userId: (_c = req.user) === null || _c === void 0 ? void 0 : _c.userId,
+            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
         });
         if (!note)
             return res.status(404).json({ message: "Note not found" });
@@ -105,12 +97,12 @@ router.delete("/:id", auth_1.authenticateUser, (req, res) => __awaiter(void 0, v
 }));
 // Update a note
 router.put("/:id", auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _a;
     try {
         const { title, content, categoryId } = req.body;
         const note = yield note_model_1.default.findById({
             _id: req.params.id,
-            userId: (_d = req.user) === null || _d === void 0 ? void 0 : _d.userId,
+            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
         });
         if (!note)
             return res.status(404).json({ message: "Note not found" });

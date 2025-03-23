@@ -21,20 +21,21 @@ export const authenticateUser = (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   const token = req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
-    return res
-      .status(401)
-      .json({ message: "Access denied, no token provided" });
+    res.status(401).json({ message: "Unauthorized" });
+    return;
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: string;
+    };
     req.user = { userId: decoded.userId };
     next();
-  } catch (error: Error) {
+  } catch (error) {
     res.status(401).json({ message: "Invalid token" });
   }
 };

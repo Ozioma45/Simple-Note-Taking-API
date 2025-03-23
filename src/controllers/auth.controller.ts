@@ -15,17 +15,15 @@ if (!JWT_SECRET) {
 }
 
 // Register a New User
-export const registerUser: RequestHandler = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+export const registerUser: RequestHandler = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      res.status(400).json({ message: "User already exists" });
+      return;
     }
 
     // Create new user
@@ -33,29 +31,28 @@ export const registerUser: RequestHandler = async (
     await user.save();
 
     res.status(201).json({ message: "User registered successfully" });
-  } catch (error: Error) {
+  } catch (error: any) {
     res.status(500).json({ message: "Server error" });
   }
 };
 
 // Login User
-export const loginUser: RequestHandler = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+export const loginUser: RequestHandler = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Check user existence
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ message: "Invalid credentials" });
+      return;
     }
 
     // Validate password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ message: "Invalid credentials" });
+      return;
     }
 
     // Generate JWT Token
@@ -64,7 +61,7 @@ export const loginUser: RequestHandler = async (
     });
 
     res.json({ token });
-  } catch (error: Error) {
+  } catch (error: any) {
     res.status(500).json({ message: "Server error" });
   }
 };

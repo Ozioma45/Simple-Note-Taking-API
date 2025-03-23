@@ -1,6 +1,12 @@
-import { Router, Request, Response } from "express";
-import Note from "../models/note.model";
+import {
+  Router,
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express";
 import { authenticateUser, AuthenticatedRequest } from "../middleware/auth";
+import Note from "../models/note.model";
 
 const router = Router();
 
@@ -10,7 +16,7 @@ router.get("/categories/:categoryId", async (req: Request, res: Response) => {
     const { categoryId } = req.params;
     const notes = await Note.find({ categoryId });
     res.json(notes);
-  } catch (error: Error) {
+  } catch (error: any) {
     console.error(error);
     res
       .status(500)
@@ -22,15 +28,12 @@ router.get("/categories/:categoryId", async (req: Request, res: Response) => {
 router.get(
   "/",
   authenticateUser,
-  async (_req: AuthenticatedRequest, res: Response) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const notes = await Note.find({ userId: _req.user?.userId });
+      const notes = await Note.find({ userId: req.user?.userId });
       res.json(notes);
-    } catch (error: Error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ message: "Internal server error", error: error.message });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
     }
   }
 );
@@ -39,41 +42,38 @@ router.get(
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: "Note not found" });
+    if (!note) {
+      res.status(404).json({ message: "Note not found" });
+      return;
+    }
     res.json(note);
-  } catch (error: Error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
 // Create a new note
 router.post(
   "/",
-  authenticateUser,
+  authenticateUser as RequestHandler,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { title, content, categoryId } = req.body;
-      if (!title || !content || !categoryId)
-        return res
-          .status(400)
-          .json({ message: "Title, content, and categoryId are required" });
+      const { title, content } = req.body;
+      if (!title || !content) {
+        res.status(400).json({ message: "Title and content are required" });
+        return;
+      }
 
       const note = new Note({
         title,
         content,
-        categoryId,
-        userId: req.user?.userId,
+        userId: req.user?.userId, // Assign note to the authenticated user
       });
+
       await note.save();
       res.status(201).json(note);
-    } catch (error: Error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ message: "Internal server error", error: error.message });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
     }
   }
 );
@@ -90,7 +90,7 @@ router.delete(
       });
       if (!note) return res.status(404).json({ message: "Note not found" });
       res.json({ message: "Note deleted successfully" });
-    } catch (error: Error) {
+    } catch (error: any) {
       console.error(error);
       res
         .status(500)
@@ -118,7 +118,7 @@ router.put(
 
       await note.save();
       res.json(note);
-    } catch (error: Error) {
+    } catch (error: any) {
       console.error(error);
       res
         .status(500)
