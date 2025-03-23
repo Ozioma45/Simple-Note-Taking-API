@@ -10,7 +10,7 @@ router.get("/categories/:categoryId", async (req: Request, res: Response) => {
     const { categoryId } = req.params;
     const notes = await Note.find({ categoryId });
     res.json(notes);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     res
       .status(500)
@@ -26,7 +26,7 @@ router.get(
     try {
       const notes = await Note.find({ userId: _req.user?.userId });
       res.json(notes);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       res
         .status(500)
@@ -41,7 +41,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
     res.json(note);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     res
       .status(500)
@@ -90,7 +90,7 @@ router.delete(
       });
       if (!note) return res.status(404).json({ message: "Note not found" });
       res.json({ message: "Note deleted successfully" });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       res
         .status(500)
@@ -118,7 +118,7 @@ router.put(
 
       await note.save();
       res.json(note);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       res
         .status(500)

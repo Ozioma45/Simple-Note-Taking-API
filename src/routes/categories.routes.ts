@@ -8,7 +8,7 @@ router.get("/", async (_req: Request, res: Response) => {
   try {
     const categories = await Category.find();
     res.json(categories);
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -30,7 +30,7 @@ router.post("/", async (req: Request, res: Response) => {
     const category = new Category({ name });
     await category.save();
     res.status(201).json(category);
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: "Internal server error" });
   }
 });
