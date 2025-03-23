@@ -25,14 +25,12 @@ export const registerUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword });
+    // Create new user
+    const user = new User({ username, email, password });
     await user.save();
 
     res.status(201).json({ message: "User registered successfully" });
-  } catch (error: any) {
-    console.error(error);
+  } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -60,7 +58,7 @@ export const loginUser = async (req: Request, res: Response) => {
     });
 
     res.json({ token });
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
